@@ -207,7 +207,15 @@ dialog{font-size:15px;line-height:1.55}
 .purchase-actions{display:grid;grid-template-columns:1fr 1fr;gap:7px}
 .purchase-actions button{min-height:38px;padding:7px 5px;font-size:clamp(12px,1.6vh,15px);border-radius:10px}
 @media(max-width:760px){.board>.center>aside{grid-template-rows:auto auto minmax(75px,1fr) auto!important}.board>.center>aside>.purchase-panel{min-height:0!important;flex:0 0 auto!important}}
-</style></head><body><header><h1>Monopoly<span>Funny</span></h1><button id="settings">⚙ Ρυθμίσεις</button></header><main class="layout"><div id="board" class="board" aria-label="Ταμπλό 40 θέσεων"></div><aside><section class="panel"><h3>Παίκτες</h3><div class="players" id="players"></div></section><section class="panel"><h3 id="turn">Η σειρά σου</h3><div class="controls"><button id="buy" hidden>🏠 Αγορά</button><button id="auction" hidden>🔨 Δημοπρασία</button><button id="build">🏘️ Χτίσιμο</button><button id="mortgage">🏦 Υποθήκη / Εξόφληση</button><button id="end" hidden>Επόμενος παίκτης ➜</button></div><p id="status" class="hint" role="status"></p></section><section class="panel history-panel" style="display:flex;flex-direction:column"><h3>📜 Ιστορικό</h3><div id="log" class="log" aria-live="polite"></div></section><section id="purchasePanel" class="panel purchase-panel" hidden aria-live="polite"><h3 id="purchaseTitle">🏠 Αγορά ακινήτου</h3><p id="purchaseDetails"></p><div class="purchase-actions"><button id="inlineBuy">🏠 Αγορά</button><button id="inlineAuction">🔨 Δημοπρασία</button></div></section></aside></main><button id="roll" hidden style="display:none!important" aria-hidden="true" tabindex="-1"></button><dialog id="modal"><h2 id="modalTitle"></h2><div id="modalBody"></div><div id="dialogActions"></div></dialog><script>
+
+/* Inline purchase decision lives under the history, no extra dialog */
+.board>.center>aside>.purchase-panel{display:flex!important;flex-direction:column!important;gap:6px!important;min-height:0!important;flex:0 0 auto!important;align-self:end!important;margin:0!important}
+.board>.center>aside>.purchase-panel[hidden],#auctionResult[hidden]{display:none!important}
+.board>.center>aside>.history-panel{min-height:45px!important}
+.board>.center>aside{grid-template-rows:auto auto minmax(45px,1fr) auto auto!important}
+.board>.center>aside>.purchase-panel .purchase-actions button{min-height:36px!important}
+.auction-result{padding:8px;text-align:center;border-radius:10px;border:1px solid #72cfff;background:#143b58;color:#f9d177;font-size:12px}
+</style></head><body><header><h1>Monopoly<span>Funny</span></h1><button id="settings">⚙ Ρυθμίσεις</button></header><main class="layout"><div id="board" class="board" aria-label="Ταμπλό 40 θέσεων"></div><aside><section class="panel"><h3>Παίκτες</h3><div class="players" id="players"></div></section><section class="panel"><h3 id="turn">Η σειρά σου</h3><div class="controls"><button id="buy" hidden style="display:none!important">🏠 Αγορά</button><button id="auction" hidden style="display:none!important">🔨 Δημοπρασία</button><button id="build">🏘️ Χτίσιμο</button><button id="mortgage">🏦 Υποθήκη / Εξόφληση</button><button id="end" hidden>Επόμενος παίκτης ➜</button></div><p id="status" class="hint" role="status"></p></section><section class="panel history-panel" style="display:flex;flex-direction:column"><h3>📜 Ιστορικό</h3><div id="log" class="log" aria-live="polite"></div></section><section id="purchasePanel" class="panel purchase-panel" hidden aria-live="polite"><h3 id="purchaseTitle">🏠 Αγορά ακινήτου</h3><p id="purchaseDetails"></p><div class="purchase-actions"><button id="inlineBuy">🏠 Αγορά</button><button id="inlineAuction">🔨 Δημοπρασία</button></div></section><div id="auctionResult" class="auction-result" hidden aria-live="polite"></div></aside></main><button id="roll" hidden style="display:none!important" aria-hidden="true" tabindex="-1"></button><dialog id="modal"><h2 id="modalTitle"></h2><div id="modalBody"></div><div id="dialogActions"></div></dialog><script>
 (()=>{
 'use strict';
 const $=id=>document.getElementById(id),SAVE='monopolyfunny-v1',COLORS=['#55c6ff','#ff8b79','#ffd16a','#9df6a7'],TOKENS=['◆','●','▲','■'],groups=['#7d4b2a','#a8dfff','#f094c6','#ffb34e','#e4444d','#e8d15b','#43ba78','#344caa'];
@@ -252,6 +260,7 @@ function promptPurchase(){
  if(!state||state.current!==0||state.phase!=='buy'||state.winner!==null)return;
  const i=player().pos,p=props[i];if(!p.price||p.owner!==-1)return;
  purchasePromptPending=true;
+ clearTimeout(turnAdvanceTimer);
  $('purchasePanel').hidden=false;
  $('purchaseTitle').textContent='🏠 '+p.name;
  $('purchaseDetails').textContent='Τιμή '+p.price+'€ · Διαθέσιμα '+player().money+'€';
@@ -264,7 +273,9 @@ async function finishPurchase(i,choice){
  purchasePromptPending=false;$('purchasePanel').hidden=true;
  if(choice===1){if(!buy(i)){promptPurchase();return}state.phase='end';render();scheduleTurnAdvance();return}
  const p=props[i],result=auction(i);state.phase='end';render();
- await timedNotice('🔨 Αποτέλεσμα δημοπρασίας','Ακίνητο: '+p.name+'\n'+(result.bids.length?'Προσφορές AI:\n'+result.bids.map(x=>x.p.name+': '+x.bid+' €').join('\n')+'\n':'Δεν έγιναν προσφορές.\n')+(result.winner?'Νικητής: '+result.winner+' με '+result.bid+' €':'Το ακίνητο παρέμεινε στην τράπεζα.'),2000);
+ $('auctionResult').textContent=result.winner?'🔨 '+result.winner+' αγόρασε '+p.name+' για '+result.bid+'€':'🔨 '+p.name+': δεν υπήρξαν προσφορές';
+ $('auctionResult').hidden=false;
+ setTimeout(()=>{$('auctionResult').hidden=true},2400);
  scheduleTurnAdvance();
 }
 function next(){if(state.winner!==null||state.phase!=='end'||state.current!==0||state.pendingDebt||purchasePromptPending||debtPromptPending)return;clearTimeout(turnAdvanceTimer);state.phase='roll';state.doubles=0;let old=state.current;do{state.current=(state.current+1)%state.players.length}while(state.players[state.current].dead);if(state.current<=old)state.round++;if(checkEndgame())return;render();if(state.current!==0)aiTurn();else scheduleAutoRoll()}
