@@ -236,9 +236,14 @@ dialog{font-size:15px;line-height:1.55}
 body>.suite-game-banner{width:min(calc(100% - 24px),720px);margin:12px auto 10px}
 .suite-game-banner img{display:block;width:100%;height:100%;object-fit:cover;object-position:center}
 @media(min-width:761px){.suite-game-banner{height:150px}}
+
+/* Explicit start/restart controls, including games loaded from /apps. */
+.header-actions{display:flex;align-items:center;gap:6px;flex:0 0 auto}
+.header-actions button{white-space:nowrap}
+@media(max-width:520px){header{gap:5px}.header-actions{gap:4px}header h1{font-size:19px}.header-actions button{padding:6px;font-size:11px}}
 </style>
 </head><body><div class="suite-game-banner"><img src="./hero-banner.svg" width="900" height="300" alt="" aria-hidden="true" decoding="async"></div>
-<header><h1>Monopoly<span>Funny</span></h1><button id="settings">⚙ Ρυθμίσεις</button></header><main class="layout"><div id="board" class="board" aria-label="Ταμπλό 40 θέσεων"></div><aside><section class="panel"><h3>Παίκτες</h3><div class="players" id="players"></div></section><section class="panel"><h3 id="turn">Η σειρά σου</h3><div class="controls"><button id="buy" hidden style="display:none!important">🏠 Αγορά</button><button id="auction" hidden style="display:none!important">🔨 Δημοπρασία</button><button id="build">🏘️ Χτίσιμο</button><button id="mortgage">🏦 Υποθήκη / Εξόφληση</button><button id="end" hidden>Επόμενος παίκτης ➜</button></div><p id="status" class="hint" role="status"></p></section><section class="panel history-panel" style="display:flex;flex-direction:column"><h3>📜 Ιστορικό</h3><div id="log" class="log" aria-live="polite"></div></section><section id="purchasePanel" class="panel purchase-panel" hidden aria-live="polite"><h3 id="purchaseTitle">🏠 Αγορά ακινήτου</h3><p id="purchaseDetails"></p><div class="purchase-actions"><button id="inlineBuy">🏠 Αγορά</button><button id="inlineAuction">🔨 Δημοπρασία</button></div></section><div id="auctionResult" class="auction-result" hidden aria-live="polite"></div></aside></main><button id="roll" hidden style="display:none!important" aria-hidden="true" tabindex="-1"></button><dialog id="modal"><h2 id="modalTitle"></h2><div id="modalBody"></div><div id="dialogActions"></div></dialog><script>
+<header><h1>Monopoly<span>Funny</span></h1><div class="header-actions"><button id="newGame" class="primary" type="button">▶ Νέα παρτίδα</button><button id="settings" type="button">⚙ Ρυθμίσεις</button></div></header><main class="layout"><div id="board" class="board" aria-label="Ταμπλό 40 θέσεων"></div><aside><section class="panel"><h3>Παίκτες</h3><div class="players" id="players"></div></section><section class="panel"><h3 id="turn">Η σειρά σου</h3><div class="controls"><button id="buy" hidden style="display:none!important">🏠 Αγορά</button><button id="auction" hidden style="display:none!important">🔨 Δημοπρασία</button><button id="build">🏘️ Χτίσιμο</button><button id="mortgage">🏦 Υποθήκη / Εξόφληση</button><button id="end" hidden>Επόμενος παίκτης ➜</button></div><p id="status" class="hint" role="status"></p></section><section class="panel history-panel" style="display:flex;flex-direction:column"><h3>📜 Ιστορικό</h3><div id="log" class="log" aria-live="polite"></div></section><section id="purchasePanel" class="panel purchase-panel" hidden aria-live="polite"><h3 id="purchaseTitle">🏠 Αγορά ακινήτου</h3><p id="purchaseDetails"></p><div class="purchase-actions"><button id="inlineBuy">🏠 Αγορά</button><button id="inlineAuction">🔨 Δημοπρασία</button></div></section><div id="auctionResult" class="auction-result" hidden aria-live="polite"></div></aside></main><button id="roll" hidden style="display:none!important" aria-hidden="true" tabindex="-1"></button><dialog id="modal"><h2 id="modalTitle"></h2><div id="modalBody"></div><div id="dialogActions"></div></dialog><script>
 (()=>{
 'use strict';
 const $=id=>document.getElementById(id),SAVE='monopolyfunny-v1',COLORS=['#55c6ff','#ff8b79','#ffd16a','#9df6a7'],TOKENS=['◆','●','▲','■'],groups=['#7d4b2a','#a8dfff','#f094c6','#ffb34e','#e4444d','#e8d15b','#43ba78','#344caa'];
@@ -310,7 +315,43 @@ function aiBuild(i){const p=state.players[i];if(p.money<350)return;let opts=prop
 $('roll').onclick=roll;$('buy').onclick=()=>{if(buy(player().pos))state.phase='end';else note('Δεν υπάρχουν αρκετά χρήματα');render()};$('auction').onclick=async()=>{if(state.phase!=='buy'||state.current!==0)return;let i=player().pos,p=props[i];let confirm=await modal('🔨 Δημοπρασία: '+p.name,'Αξία ακινήτου: '+p.price+' €. Αν δεν το αγοράσεις, οι αντίπαλοι AI κάνουν αυτόματες προσφορές. Εσύ δεν χρεώνεσαι και δεν συμμετέχεις στη δημοπρασία.',[['Έναρξη δημοπρασίας',true],['Άκυρο',false]]);if(!confirm)return;let result=auction(i);state.phase='end';render();await timedNotice('🔨 Αποτέλεσμα δημοπρασίας','Ακίνητο: '+p.name+'\n'+(result.bids.length?'Προσφορές AI:\n'+result.bids.map(x=>x.p.name+': '+x.bid+' €').join('\n')+'\n':'Δεν έγιναν προσφορές.\n')+(result.winner?'Νικητής: '+result.winner+' με '+result.bid+' €':'Το ακίνητο παραμένει διαθέσιμο στην τράπεζα.'),2000)};$('end').onclick=next;
 $('build').onclick=async()=>{let options=props.map((p,i)=>({p,i})).filter(x=>x.p.owner===0&&monopoly(x.p)&&x.p.houses<5&&!x.p.mortgaged&&player().money>=Math.round(x.p.price/2));if(!options.length){await modal('Χτίσιμο','Χρειάζεσαι πλήρη ομάδα χρώματος και αρκετά χρήματα.',[['Εντάξει',0]]);return}let choice=await modal('Χτίσιμο','Διάλεξε ακίνητο. Κόστος κάθε κτιρίου: μισή τιμή αγοράς.',[...options.map(x=>[x.p.name+' ('+Math.round(x.p.price/2)+'€)',x.i]),['Άκυρο',-1]]);if(choice>=0){let p=props[choice];const siblings=groupIndices[p.group].map(i=>props[i].houses);if(p.houses>Math.min(...siblings)){note('Χτίζεις ομοιόμορφα σε όλη την ομάδα');render();return}player().money-=Math.round(p.price/2);p.houses++;note('Έχτισες στο '+p.name);render()}};
 $('mortgage').onclick=async()=>{if(state.current!==0||state.winner!==null)return;await manageMortgages(!!state.pendingDebt)};
-$('settings').onclick=async()=>{let c=await modal('⚙ Ρυθμίσεις','Παιχνίδι ακινήτων με πρωτότυπο ταμπλό. Στόχος: να μείνεις ο τελευταίος παίκτης με χρήματα. Ρίχνεις δύο ζάρια, αγοράζεις ελεύθερα ακίνητα, εισπράττεις ενοίκια και χτίζεις αφού αποκτήσεις όλα τα ακίνητα ενός χρώματος. Αν αρνηθείς αγορά γίνεται δημοπρασία. Στην Αφετηρία εισπράττεις 200€. Υπάρχουν φόροι, κάρτες, φυλακή, υποθήκες και χρεοκοπία. Η πρόοδος αποθηκεύεται αυτόματα.',[['Συνέχεια',0],['Νέο παιχνίδι',1]]);if(c===1){let n=await modal('Νέο παιχνίδι','Επίλεξε πόσους αντιπάλους θέλεις στην παρτίδα.', [['🤖 1 AI',1],['🤖 2 AI',2],['🤖 3 AI',3],['Ακύρωση',0]]);if(n){let ok=await modal('Επιβεβαίωση','Η τρέχουσα παρτίδα θα αντικατασταθεί.',[['Νέα παρτίδα',true],['Άκυρο',false]]);if(ok){gameGeneration++;clearTimeout(turnAdvanceTimer);if($('modal').open)$('modal').close();state=initial(n);busy=false;purchasePromptPending=false;debtPromptPending=false;autoRollPending=false;note('Νέα παρτίδα με '+n+' AI');render();setTimeout(()=>{if(state&&state.winner===null&&state.round===1&&state.current===0&&state.phase==='roll')scheduleAutoRoll()},350)}}}};
-try{let saved=JSON.parse(localStorage.getItem(SAVE)||'null');state=saved&&Array.isArray(saved.players)&&saved.properties?.length===40? saved:initial(2)}catch(_){state=initial(2)}sync();if(state.players?.[0])state.players[0].name='seemsfunny';if(Array.isArray(state.log))state.log=state.log.map(historyLabel);if(state.winner===null&&state.round>MAX_ROUNDS)checkEndgame();if(!state.log.length)note('Καλώς ήρθες! Ρίξε τα ζάρια.');render();if(state.current!==0&&state.winner===null)aiTurn();else if(state.pendingDebt)scheduleDebtPrompt();else if(state.phase==='buy')setTimeout(promptPurchase,450);else if(state.phase==='end')scheduleTurnAdvance();else scheduleAutoRoll();
+async function startNewGameFlow(){
+ const n=await modal('Νέο παιχνίδι','Επίλεξε πόσους αντιπάλους θέλεις στην παρτίδα.',[
+  ['🤖 1 AI',1],['🤖 2 AI',2],['🤖 3 AI',3],['Ακύρωση',0]
+ ]);
+ if(!n){if(state?.phase==='roll')scheduleAutoRoll();return false}
+ const inProgress=state?.winner===null&&Array.isArray(state.log)&&state.log.some(x=>String(x).includes('έφερε'));
+ if(inProgress){
+  const ok=await modal('Επιβεβαίωση','Η τρέχουσα παρτίδα θα αντικατασταθεί.',[['Νέα παρτίδα',true],['Άκυρο',false]]);
+  if(!ok){if(state?.phase==='roll')scheduleAutoRoll();return false}
+ }
+ gameGeneration++;
+ clearTimeout(turnAdvanceTimer);
+ if($('modal').open)$('modal').close();
+ state=initial(n);
+ busy=false;purchasePromptPending=false;debtPromptPending=false;autoRollPending=false;
+ note('Νέα παρτίδα με '+n+' AI');
+ render();
+ setTimeout(()=>{if(state&&state.winner===null&&state.round===1&&state.current===0&&state.phase==='roll')scheduleAutoRoll()},350);
+ return true
+}
+$('newGame').onclick=()=>startNewGameFlow();
+$('settings').onclick=async()=>{
+ const c=await modal('⚙ Ρυθμίσεις','Παιχνίδι ακινήτων με πρωτότυπο ταμπλό. Στόχος: να μείνεις ο τελευταίος παίκτης με χρήματα. Ρίχνεις δύο ζάρια, αγοράζεις ελεύθερα ακίνητα, εισπράττεις ενοίκια και χτίζεις αφού αποκτήσεις όλα τα ακίνητα ενός χρώματος. Αν αρνηθείς αγορά γίνεται δημοπρασία. Στην Αφετηρία εισπράττεις 200€. Υπάρχουν φόροι, κάρτες, φυλακή, υποθήκες και χρεοκοπία. Η πρόοδος αποθηκεύεται αυτόματα.',[['Συνέχεια',0],['Νέο παιχνίδι',1]]);
+ if(c===1)await startNewGameFlow();
+ else if(state?.phase==='roll')scheduleAutoRoll();
+}
+try{
+ const saved=JSON.parse(localStorage.getItem(SAVE)||'null');
+ const valid=saved&&Array.isArray(saved.players)&&saved.players.length>=2&&saved.players.length<=4
+  &&Array.isArray(saved.properties)&&saved.properties.length===40&&Array.isArray(saved.log)
+  &&Array.isArray(saved.dice)&&saved.dice.length===2&&Number.isInteger(saved.current)
+  &&saved.current>=0&&saved.current<saved.players.length
+  &&Number.isInteger(saved.round)&&saved.round>=1
+  &&['roll','buy','end','debt','finished'].includes(saved.phase)
+  &&saved.players.every(p=>p&&typeof p.money==='number'&&Number.isInteger(p.pos))
+  &&saved.properties.every(p=>p&&Number.isInteger(p.owner)&&Number.isInteger(p.houses));
+ state=valid?saved:initial(2);
+}catch(_){state=initial(2)}sync();if(state.players?.[0])state.players[0].name='seemsfunny';if(Array.isArray(state.log))state.log=state.log.map(historyLabel);if(state.winner===null&&state.round>MAX_ROUNDS)checkEndgame();if(!state.log.length)note('Καλώς ήρθες! Ρίξε τα ζάρια.');render();if(state.current!==0&&state.winner===null)aiTurn();else if(state.pendingDebt)scheduleDebtPrompt();else if(state.phase==='buy')setTimeout(promptPurchase,450);else if(state.phase==='end')scheduleTurnAdvance();else scheduleAutoRoll();
 })();
 </script><script>if('serviceWorker' in navigator)window.addEventListener('load',async()=>{try{const regs=await navigator.serviceWorker.getRegistrations();await Promise.all(regs.filter(r=>r.scope.includes('/monopolyfunny/')).map(r=>r.unregister()));const keys=await caches.keys();await Promise.all(keys.filter(k=>k.startsWith('monopolyfunny-')).map(k=>caches.delete(k)));}catch(e){console.warn('Cache cleanup:',e)}});</script></body></html>
