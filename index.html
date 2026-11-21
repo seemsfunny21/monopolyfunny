@@ -118,6 +118,17 @@ dialog{font-size:15px;line-height:1.55}
  .center .controls button{min-height:28px;padding:3px;font-size:10px}
  .center .player{padding:3px}
 }
+
+/* Definitive inner-board containment: central UI cannot overlap edge properties */
+@media(max-width:760px){
+ .board{position:relative;isolation:isolate}
+ .board>.center{position:absolute!important;grid-column:auto!important;grid-row:auto!important;inset:9.09% 9.09% 9.09% 9.09%;width:auto!important;height:auto!important;max-width:none!important;min-width:0!important;box-sizing:border-box;z-index:1;overflow:hidden;display:grid;grid-template-columns:minmax(0,1fr);grid-template-rows:auto auto minmax(0,1fr);justify-items:stretch}
+ .board>.center>aside{width:100%!important;max-width:100%!important;min-width:0!important;box-sizing:border-box;display:grid;grid-template-columns:minmax(0,1fr);grid-template-rows:auto minmax(0,1fr);overflow:hidden}
+ .board>.center .panel{width:100%!important;max-width:100%!important;min-width:0!important;box-sizing:border-box}
+ .board>.center .players,.board>.center .controls{width:100%;max-width:100%;min-width:0;grid-template-columns:repeat(2,minmax(0,1fr))}
+ .board>.center .player,.board>.center .controls button{min-width:0;max-width:100%;box-sizing:border-box}
+ .board>.center .controls button{font-size:clamp(9px,1.55vh,13px);overflow-wrap:anywhere;word-break:normal}
+}
 </style></head><body><header><h1>Monopoly<span>Funny</span></h1><button id="settings">⚙ Ρυθμίσεις</button></header><main class="layout"><div id="board" class="board" aria-label="Ταμπλό 40 θέσεων"></div><aside><section class="panel"><h3>Παίκτες</h3><div class="players" id="players"></div></section><section class="panel"><h3 id="turn">Η σειρά σου</h3><div class="controls"><button class="primary" id="roll">🎲 Ρίξε ζάρια</button><button id="buy" hidden>🏠 Αγορά</button><button id="auction" hidden>🔨 Δημοπρασία</button><button id="build">🏘️ Χτίσιμο</button><button id="mortgage">🏦 Υποθήκη / Εξόφληση</button><button id="end" hidden>Επόμενος παίκτης ➜</button></div><p id="status" class="hint" role="status"></p></section><section class="panel"><h3>Ιστορικό</h3><div id="log" class="log" aria-live="polite"></div></section></aside></main><dialog id="modal"><h2 id="modalTitle"></h2><div id="modalBody"></div><div id="dialogActions"></div></dialog><script>
 (()=>{
 'use strict';
@@ -164,4 +175,4 @@ $('mortgage').onclick=async()=>{const opts=props.map((p,i)=>({p,i})).filter(x=>x
 $('settings').onclick=async()=>{let c=await modal('⚙ Ρυθμίσεις','Παιχνίδι ακινήτων με πρωτότυπο ταμπλό. Στόχος: να μείνεις ο τελευταίος παίκτης με χρήματα. Ρίχνεις δύο ζάρια, αγοράζεις ελεύθερα ακίνητα, εισπράττεις ενοίκια και χτίζεις αφού αποκτήσεις όλα τα ακίνητα ενός χρώματος. Αν αρνηθείς αγορά γίνεται δημοπρασία. Στην Αφετηρία εισπράττεις 200€. Υπάρχουν φόροι, κάρτες, φυλακή, υποθήκες και χρεοκοπία. Η πρόοδος αποθηκεύεται αυτόματα.',[['Συνέχεια',0],['Νέο παιχνίδι',1]]);if(c===1){let n=await modal('Νέο παιχνίδι','Πόσους αντιπάλους AI θέλεις;', [['1 AI',1],['2 AI',2],['3 AI',3],['Άκυρο',0]]);if(n){let ok=await modal('Επιβεβαίωση','Η τρέχουσα παρτίδα θα αντικατασταθεί.',[['Νέα παρτίδα',true],['Άκυρο',false]]);if(ok){state=initial(n);note('Νέα παρτίδα με '+n+' AI');render()}}}};
 try{let saved=JSON.parse(localStorage.getItem(SAVE)||'null');state=saved&&Array.isArray(saved.players)&&saved.properties?.length===40? saved:initial(2)}catch(_){state=initial(2)}sync();if(!state.log.length)note('Καλώς ήρθες! Ρίξε τα ζάρια.');render();if(state.current!==0&&state.winner===null)aiTurn();else scheduleAutoRoll();
 })();
-</script><script>if('serviceWorker' in navigator)window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js?v=20261121boardfix').catch(()=>{}));</script></body></html>
+</script><script>if('serviceWorker' in navigator)window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js?v=20261121contain').catch(()=>{}));</script></body></html>
