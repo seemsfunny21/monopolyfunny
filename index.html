@@ -1,5 +1,42 @@
 <!doctype html><html lang="el"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#071426"><title>MonopolyFunny</title><link rel="manifest" href="manifest.webmanifest"><style>
 :root{font-family:system-ui,Arial;background:#071426;color:#e9f7ff}*{box-sizing:border-box}body{margin:0;background:radial-gradient(circle at 50% 0,#16446a,#071426 75%);min-height:100dvh}button,select{font:inherit}button{border:1px solid #4e9dcc;background:#16456c;color:#f2fbff;border-radius:10px;padding:10px;cursor:pointer}button:disabled{opacity:.35;cursor:default}button.primary{background:linear-gradient(130deg,#187cba,#13517b);border-color:#80d7ff;font-weight:800}header{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:12px 14px;max-width:1050px;margin:auto}h1{margin:0;font-size:clamp(20px,4vw,30px);letter-spacing:-1px}h1 span{color:#6fd4ff}.layout{display:grid;grid-template-columns:minmax(0,1fr) 260px;gap:12px;max-width:1050px;margin:auto;padding:0 10px 20px}.board{display:grid;grid-template-columns:repeat(11,minmax(0,1fr));grid-template-rows:repeat(11,minmax(0,1fr));aspect-ratio:1;background:#0b2740;border:2px solid #64b9ed;border-radius:14px;overflow:hidden;box-shadow:0 0 35px #0e85d033}.tile{min-width:0;min-height:0;position:relative;border:1px solid #285472;background:#102f4b;display:flex;flex-direction:column;justify-content:space-between;align-items:center;padding:1px;overflow:hidden;text-align:center}.tile .band{width:100%;height:5px;flex:none}.tile .name{font-size:clamp(5px,.85vw,10px);line-height:1.1;overflow-wrap:anywhere}.tile .price{font-size:clamp(5px,.75vw,9px);color:#a8e4ff}.tile .tokens{font-size:clamp(8px,1.2vw,14px);line-height:1}.tile.owned{box-shadow:inset 0 0 0 2px var(--owner)}.tile .houses{font-size:9px;color:#a8f7bb}.center{grid-column:2/12;grid-row:2/12;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:12px;background:radial-gradient(circle,#154c74,#0a243b)}.center h2{font-size:clamp(18px,4vw,44px);margin:0;color:#8fe3ff}.dice{font-size:clamp(30px,7vw,70px)}.panel{background:#0b2843e8;border:1px solid #2e6b96;border-radius:14px;padding:12px;margin-bottom:10px}.panel h3{margin:0 0 8px;font-size:15px}.players{display:grid;gap:7px}.player{padding:8px;border-radius:9px;background:#123c5e;border-left:4px solid var(--pc);font-size:13px}.player.active{outline:2px solid #7bd7ff}.player.dead{opacity:.4}.player strong{display:block}.controls{display:grid;gap:7px}.controls button{width:100%}.log{font-size:12px;max-height:160px;overflow:auto;color:#b6d8ef}.log p{margin:5px 0;border-bottom:1px solid #285071;padding-bottom:4px}.hint{font-size:12px;color:#9fc5de}dialog{width:min(480px,94vw);max-height:85dvh;overflow:auto;background:#0c2944;color:#e8f8ff;border:1px solid #75c6f5;border-radius:16px;box-shadow:0 20px 80px #000b;padding:20px}dialog::backdrop{background:#010915dd}dialog h2{margin-top:0}dialog li{margin-bottom:9px}dialog button{margin:5px}#dialogActions{display:flex;flex-wrap:wrap;justify-content:center}.row{display:flex;justify-content:space-between;gap:8px;align-items:center}select{background:#123c5e;color:white;border:1px solid #5aa3ce;border-radius:8px;padding:8px}@media(max-width:760px){.layout{display:flex;flex-direction:column}.board{width:100%}.tile .name{font-size:clamp(5px,1.6vw,10px)}.tile .price{font-size:clamp(5px,1.4vw,9px)}.tile .tokens{font-size:clamp(8px,2.3vw,15px)}.panel{margin-bottom:8px}.players{grid-template-columns:repeat(2,minmax(0,1fr))}}@media(max-width:400px){.tile .name{font-size:5px}.tile .price{font-size:5px}}
+
+/* Premium compact mobile board layout */
+@media(max-width:760px){
+ html,body{height:100%;overflow:hidden}
+ body{height:100dvh;display:flex;flex-direction:column}
+ header{flex:0 0 auto;padding:5px 10px;min-height:43px}
+ h1{font-size:22px}
+ header button{padding:7px 10px;font-size:12px}
+ .layout{flex:1 1 auto;min-height:0;overflow:hidden;display:flex;flex-direction:column;align-items:center;gap:6px;padding:0 7px 7px;width:100%}
+ .board{flex:0 0 auto;width:min(calc(100vw - 14px),43dvh);height:min(calc(100vw - 14px),43dvh);aspect-ratio:1;border-radius:12px;border-width:1px}
+ .center{gap:3px}
+ .center h2{font-size:clamp(12px,3vw,21px)}
+ .dice{font-size:clamp(19px,5vw,38px)}
+ .tile .band{height:3px}
+ .tile .name{font-size:clamp(4px,1.18vw,7px)}
+ .tile .price{font-size:clamp(4px,1.12vw,7px)}
+ .tile .tokens{font-size:clamp(7px,2vw,12px)}
+ .tile .houses{font-size:7px}
+ aside{width:100%;min-height:0;flex:1 1 auto;display:flex;flex-direction:column;gap:6px;overflow:hidden}
+ .panel{margin:0;padding:8px 10px;border-radius:12px}
+ .panel h3{margin:0 0 5px;font-size:12px}
+ .players{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:5px}
+ .player{font-size:11px;padding:5px 7px;border-radius:7px;line-height:1.25}
+ .player strong{font-size:12px}
+ .controls{grid-template-columns:repeat(2,minmax(0,1fr));gap:5px}
+ .controls button{padding:7px 4px;font-size:12px;min-height:34px}
+ .controls button[hidden]{display:none}
+ #status{font-size:11px;margin:5px 0 0;line-height:1.25}
+ .panel:has(#log){display:none}
+}
+@media(max-width:760px) and (max-height:680px){
+ .board{width:min(calc(100vw - 14px),39dvh);height:min(calc(100vw - 14px),39dvh)}
+ .panel{padding:5px 8px}
+ .player{padding:3px 6px;font-size:10px}
+ .controls button{min-height:28px;padding:4px}
+}
+@media(min-width:761px){.board{max-height:calc(100dvh - 90px)}}
 </style></head><body><header><h1>Monopoly<span>Funny</span></h1><button id="settings">⚙ Ρυθμίσεις</button></header><main class="layout"><div id="board" class="board" aria-label="Ταμπλό 40 θέσεων"></div><aside><section class="panel"><h3>Παίκτες</h3><div class="players" id="players"></div></section><section class="panel"><h3 id="turn">Η σειρά σου</h3><div class="controls"><button class="primary" id="roll">🎲 Ρίξε ζάρια</button><button id="buy" hidden>🏠 Αγορά</button><button id="auction" hidden>🔨 Δημοπρασία</button><button id="build">🏘️ Χτίσιμο</button><button id="mortgage">🏦 Υποθήκη / Εξόφληση</button><button id="end" hidden>Επόμενος παίκτης ➜</button></div><p id="status" class="hint" role="status"></p></section><section class="panel"><h3>Ιστορικό</h3><div id="log" class="log" aria-live="polite"></div></section></aside></main><dialog id="modal"><h2 id="modalTitle"></h2><div id="modalBody"></div><div id="dialogActions"></div></dialog><script>
 (()=>{
 'use strict';
